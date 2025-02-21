@@ -538,6 +538,11 @@
                     div.style.height = `${squareSize}px`;
                     div.style.left = `${x * squareSize}px`;
                     div.style.top = `${y * squareSize}px`;
+                    // 存储原始尺寸和位置
+                    div.dataset.originalWidth = squareSize;
+                    div.dataset.originalHeight = squareSize;
+                    div.dataset.originalLeft = x * squareSize;
+                    div.dataset.originalTop = y * squareSize;
                     gridContainer.appendChild(div);
                 }
             }
@@ -573,35 +578,44 @@
                     // 限制缩放范围
                     const limitedScale = Math.min(Math.max(scale, 0.5), 2);
 
-                    // 应用缩放到网格
+                    // 应用缩放到网格项
                     updateGridScale(limitedScale);
                 }
             });
 
             function getCurrentScale() {
-                // 获取当前网格的缩放值
-                const gridContainer = document.getElementById('grid-container');
-                const transform = gridContainer.style.transform;
-                const match = transform.match(/scale\((.*?)\)/);
-                return match ? parseFloat(match[1]) : 1;
+                // 获取一个网格项的当前宽度来计算缩放值
+                const firstGridItem = document.querySelector('.grid-item');
+                const currentWidth = parseFloat(getComputedStyle(firstGridItem).width);
+                const originalWidth = parseFloat(firstGridItem.dataset.originalWidth);
+                return currentWidth / originalWidth;
             }
 
             function updateGridScale(scale) {
                 const gridItems = document.querySelectorAll('.grid-item');
                 gridItems.forEach(item => {
-                    // 更新每个网格项的尺寸
-                    const originalWidth = parseFloat(item.dataset.originalWidth || item.style.width);
-                    const originalHeight = parseFloat(item.dataset.originalHeight || item.style.height);
+                    // 获取原始值
+                    const originalWidth = parseFloat(item.dataset.originalWidth);
+                    const originalHeight = parseFloat(item.dataset.originalHeight);
+                    const originalLeft = parseFloat(item.dataset.originalLeft);
+                    const originalTop = parseFloat(item.dataset.originalTop);
                     
+                    // 更新尺寸和位置
                     item.style.width = `${originalWidth * scale}px`;
                     item.style.height = `${originalHeight * scale}px`;
-                    
-                    // 更新位置以保持对齐
-                    const originalLeft = parseFloat(item.dataset.originalLeft || item.style.left);
-                    const originalTop = parseFloat(item.dataset.originalTop || item.style.top);
-                    
                     item.style.left = `${originalLeft * scale}px`;
                     item.style.top = `${originalTop * scale}px`;
+                    
+                    // 更新边框宽度
+                    if(item.classList.contains('thick-right') || item.classList.contains('thick-bottom')) {
+                        item.style.borderWidth = `${1 * scale}px`;
+                    }
+                    if(item.classList.contains('thick-right')) {
+                        item.style.borderRightWidth = `${2 * scale}px`;
+                    }
+                    if(item.classList.contains('thick-bottom')) {
+                        item.style.borderBottomWidth = `${2 * scale}px`;
+                    }
                 });
             }
         };
