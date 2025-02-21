@@ -531,10 +531,10 @@
                     if ((y + 1) % 5 === 0) div.classList.add('thick-bottom');
                     if (x === Math.floor(squaresPerRow / 2)) div.classList.add('middle-vertical');
                     if (y === Math.floor(squaresPerColumn / 2)) div.classList.add('middle-horizontal');
-                    div.style.width = `${newsquareSize}px`;
-                    div.style.height = `${newsquareSize}px`;
-                    div.style.left = `${x * newsquareSize}px`;
-                    div.style.top = `${y * newsquareSize}px`;
+                    div.style.width = `${squareSize}px`;
+                    div.style.height = `${squareSize}px`;
+                    div.style.left = `${x * squareSize}px`;
+                    div.style.top = `${y * squareSize}px`;
                     gridContainer.appendChild(div);
                 }
             }
