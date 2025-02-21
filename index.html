@@ -239,28 +239,28 @@
 
 
     <script>
-        // Initialize variables
+        /*Initialize variables*/
         var cursor = document.getElementById('cursor');
         var rectangle = document.getElementById('rectangle');
         var start = null;
         var secondTap = false;
         var tapCount = 0;
         var tapTimeout = null;
-        var snackbar = document.querySelector('.snackbar'); // Get the snackbar element
-        // Initialize a counter for the rectangles
+        var snackbar = document.querySelector('.snackbar'); /*Get the snackbar element*/
+        /*Initialize a counter for the rectangles*/
         var rectangleCount = 0;
         var rectangle;
 
 
 
-        // Handle touchstart event
+        /*Handle touchstart event*/
         document.addEventListener('touchstart', function (e) {
             e.preventDefault();
             clearTimeout(tapTimeout);
             tapCount++;
     
 
-            // If double tap, display the cursor
+            /*If double tap, display the cursor*/
             if (tapCount === 2) {
                 cursor.style.top = (e.touches[0].clientY - 100) + 'px';
                 cursor.style.left = (e.touches[0].clientX - 50) + 'px';
@@ -272,44 +272,44 @@
                 snackbar.innerHTML = '<p>slide to hover over the face.</p>';
             }
 
-            // 处理多点触控缩放
+            /*Handle multi-touch scaling*/
             if (e.touches.length > 1) {
-                // 获取两个触摸点
+                /*Get two touch points*/
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 
-                // 计算两点之间的初始距离
+                /*Calculate the initial distance between the two touch points*/
                 const initialDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
 
-                // 存储初始状态
+                /*Store the initial state*/
                 const face = document.querySelector('.face');
                 const grid = document.getElementById('grid-container');
                 const initialFaceRect = face.getBoundingClientRect();
                 const initialGridRect = grid.getBoundingClientRect();
 
-                // 监听touchmove事件进行缩放
+                /*Listen to touchmove events for scaling*/
                 document.addEventListener('touchmove', function handleScale(e) {
                     if (e.touches.length > 1) {
                         const newTouch1 = e.touches[0];
                         const newTouch2 = e.touches[1];
                         
-                        // 计算新的距离
+                        /*Calculate the new distance*/
                         const newDistance = Math.hypot(
                             newTouch2.clientX - newTouch1.clientX,
                             newTouch2.clientY - newTouch1.clientY
                         );
                         
-                        // 计算缩放比例
+                        /*Calculate the scaling ratio*/
                         const scale = newDistance / initialDistance;
                         
-                        // 更新face尺寸
+                        /*Update the face size*/
                         face.style.width = `${initialFaceRect.width * scale}px`;
                         face.style.height = `${initialFaceRect.height * scale}px`;
                         
-                        // 更新squareSize
+                        /*Update the squareSize*/
                         const newSquareSize = squareSize * scale;
                         const gridItems = document.querySelectorAll('.grid-item');
                         gridItems.forEach(item => {
@@ -319,7 +319,7 @@
                     }
                 });
 
-                // 清理事件监听器
+                /*Clean up the event listeners*/
                 document.addEventListener('touchend', function cleanup() {
                     document.removeEventListener('touchmove', handleScale);
                     document.removeEventListener('touchend', cleanup);
@@ -358,41 +358,41 @@
             }
             */
         });
-        // 检查cursor是否与face边界重合的函数
+        /*Check if the cursor overlaps with the face boundary*/
         function checkCursorOverlap() {
             const face = document.querySelector('.face');
             if (cursor.style.display === 'block' && face) {
-                // 获取cursor中心点坐标
-                const cursorX = parseInt(cursor.style.left) + 43; // cursor宽度的一半
-                const cursorY = parseInt(cursor.style.top) + 43; // cursor高度的一半
+                /*Get the cursor center point coordinates*/
+                const cursorX = parseInt(cursor.style.left) + 43; /*cursor width的一半*/
+                const cursorY = parseInt(cursor.style.top) + 43; /*cursor高度的一半*/
                 
-                // 获取face的位置和尺寸
+                /*Get the face position and size*/
                 const faceRect = face.getBoundingClientRect();
                 const faceLeft = faceRect.left;
                 const faceTop = faceRect.top;
                 const faceWidth = faceRect.width;
                 const faceHeight = faceRect.height;
                 
-                // 检查是否与face边界重合（允许2px的误差）
+                /*Check if the cursor overlaps with the face boundary (allow 2px error)*/
                 const onLeftEdge = Math.abs(cursorX - faceLeft) <= 2;
                 const onRightEdge = Math.abs(cursorX - (faceLeft + faceWidth)) <= 2;
                 const onTopEdge = Math.abs(cursorY - faceTop) <= 2;
                 const onBottomEdge = Math.abs(cursorY - (faceTop + faceHeight)) <= 2;
                 
-                // 如果cursor位于face之上，更改face颜色
+                /*If the cursor is above the face, change the face color*/
                 if (cursorX >= faceLeft && cursorX <= faceLeft + faceWidth &&
                     cursorY >= faceTop && cursorY <= faceTop + faceHeight) {
-                    face.style.backgroundColor = '#ababa9'; // 改为红色
+                    face.style.backgroundColor = '#ababa9'; /*Change to red*/
                 } else {
-                    face.style.backgroundColor = '#7e7e7e'; // 恢复原来的颜色
+                    face.style.backgroundColor = '#7e7e7e'; /*Restore the original color*/
                 }
 
-                // 如果与任意边界重合，创建边界指示器
+                /*If the cursor overlaps with any boundary, create a boundary indicator*/
                 face.style.borderWidth = '2px';
                 face.style.borderStyle = 'solid'; 
                 face.style.borderColor = '#000000';
 
-                // 移除所有已存在的边界指示器
+                /*Remove all existing boundary indicators*/
                 const oldIndicators = document.querySelectorAll('.edge-indicator');
                 oldIndicators.forEach(indicator => indicator.remove());
 
@@ -451,14 +451,14 @@
             }
         }
 
-        // 在cursor移动时检查重合
+        /*Check overlap when cursor moves*/
         setInterval(checkCursorOverlap, 100);
 
 
 
 
 
-        // Handle touchmove event
+        /*Handle touchmove event*/
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
 
@@ -466,32 +466,32 @@
             cursor.style.top = (e.touches[0].clientY - 100) + 'px';
             cursor.style.left = (e.touches[0].clientX - 50) + 'px';
 
-            // If start is defined and not secondTap, adjust rectangle size
+            /*If start is defined and not secondTap, adjust rectangle size*/
             if (start && !secondTap) {
                 rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
                 rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
                 snackbar.style.display = 'block';
-                snackbar.innerHTML = '<p>slide to hover over the face.</p>'; // Update the snackbar text
+                snackbar.innerHTML = '<p>slide to hover over the face.</p>'; /*Update the snackbar text*/
             }
 
         });
 
-        // Handle touchend event
+        /*Handle touchend event*/
         document.addEventListener('touchend', function (e) {
             e.preventDefault();
 
 
-            // Handle tap count and snackbar message
+            /*Handle tap count and snackbar message*/
             if (tapCount < 2) {
                 tapTimeout = setTimeout(function () {
                     tapCount = 0;
-                }, 300); // 300ms delay to wait for possible second tap
+                }, 300); /*300ms delay to wait for possible second tap*/
             } else if (tapCount === 2) {
                 cursor.style.display = 'none';
                 tapCount = 0;
             }
 
-            // Hide cursor if no touch
+            /*Hide cursor if no touch*/
             if (e.touches.length === 0) {
                 cursor.style.display = 'none';
                 snackbar.style.display = 'none';
@@ -499,10 +499,10 @@
                 snackbar.innerHTML = '<p><code>Doubletap + hold</code> to accesss precise cursor.</p>';
             }
 
-            // If secondTap is true, change the border color of the rectangle
+            /*If secondTap is true, change the border color of the rectangle*/
             if (secondTap) {
-                rectangle.style.background = 'rgba(6, 150, 215, 0.2)'; // Change this to your desired color
-                rectangle = null; // Reset rectangle variable
+                rectangle.style.background = 'rgba(6, 150, 215, 0.2)'; /*Change this to your desired color*/
+                rectangle = null; /*Reset rectangle variable*/
 
                 if (!rectangle) {
                     tapCount = 0;
@@ -512,20 +512,20 @@
             }
         });
 
-        // Prevent page refresh on drag
+        /*Prevent page refresh on drag*/
         window.addEventListener('touchmove', function (e) {
             e.preventDefault();
-        }, { passive: false }); // Use passive: false to make the preventDefault() call effective
+        }, { passive: false }); /*Use passive: false to make the preventDefault() call effective*/
 
-        // Handle window load event
+        /*Handle window load event*/
         window.onload = function () {
             const gridContainer = document.getElementById('grid-container');
-            // 将squareSize定义为全局变量
+            /*Define squareSize as a global variable*/
             window.squareSize = Math.floor(Math.min(window.innerWidth, window.innerHeight) / 20);
             const squaresPerRow = Math.floor(window.innerWidth / squareSize);
             const squaresPerColumn = Math.floor(window.innerHeight / squareSize);
 
-            // Create grid items
+            /*Create grid items*/
             for (let y = 0; y < squaresPerColumn; y++) {
                 for (let x = 0; x < squaresPerRow; x++) {
                     const div = document.createElement('div');
@@ -538,7 +538,7 @@
                     div.style.height = `${squareSize}px`;
                     div.style.left = `${x * squareSize}px`;
                     div.style.top = `${y * squareSize}px`;
-                    // 存储原始尺寸和位置
+                    /*Store the original size and position*/
                     div.dataset.originalWidth = squareSize;
                     div.dataset.originalHeight = squareSize;
                     div.dataset.originalLeft = x * squareSize;
@@ -547,74 +547,74 @@
                 }
             }
 
-            // 添加触摸事件处理
+            /*Add touch event handling*/
             let initialDistance = 0;
             let initialScale = 1;
+            let currentScale = 1; /*Add tracking of the current scaling ratio*/
 
             document.addEventListener('touchstart', function(e) {
                 if (e.touches.length === 2) {
-                    // 计算两个触摸点之间的初始距离
+                    /*Calculate the initial distance between the two touch points*/
                     initialDistance = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
-                    initialScale = getCurrentScale(); // 获取当前缩放值
+                    initialScale = currentScale; /*Use the current scaling value as the initial value*/
                 }
             });
 
             document.addEventListener('touchmove', function(e) {
                 if (e.touches.length === 2) {
-                    e.preventDefault(); // 防止页面缩放
+                    e.preventDefault(); /*Prevent page zoom*/
 
-                    // 计算新的距离
+                    /*Calculate the new distance*/
                     const currentDistance = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
 
-                    // 计算缩放比例
+                    /*Calculate the scaling ratio*/
                     const scale = (currentDistance / initialDistance) * initialScale;
                     
-                    // 限制缩放范围
+                    /*Limit the scaling range*/
                     const limitedScale = Math.min(Math.max(scale, 0.5), 2);
+                    currentScale = limitedScale; /*Update the current scaling value*/
 
-                    // 应用缩放到网格项
+                    /*Apply scaling to the grid items*/
                     updateGridScale(limitedScale);
                 }
             });
 
             function getCurrentScale() {
-                // 获取一个网格项的当前宽度来计算缩放值
-                const firstGridItem = document.querySelector('.grid-item');
-                const currentWidth = parseFloat(getComputedStyle(firstGridItem).width);
-                const originalWidth = parseFloat(firstGridItem.dataset.originalWidth);
-                return currentWidth / originalWidth;
+                return currentScale; /*Return the current scaling value*/
             }
 
             function updateGridScale(scale) {
                 const gridItems = document.querySelectorAll('.grid-item');
                 gridItems.forEach(item => {
-                    // 获取原始值
+                    /*Get the original values*/
                     const originalWidth = parseFloat(item.dataset.originalWidth);
                     const originalHeight = parseFloat(item.dataset.originalHeight);
                     const originalLeft = parseFloat(item.dataset.originalLeft);
                     const originalTop = parseFloat(item.dataset.originalTop);
                     
-                    // 更新尺寸和位置
+                    /*Update the size and position, using the original position multiplied by the scaling ratio*/
                     item.style.width = `${originalWidth * scale}px`;
                     item.style.height = `${originalHeight * scale}px`;
                     item.style.left = `${originalLeft * scale}px`;
                     item.style.top = `${originalTop * scale}px`;
                     
-                    // 更新边框宽度
-                    if(item.classList.contains('thick-right') || item.classList.contains('thick-bottom')) {
-                        item.style.borderWidth = `${1 * scale}px`;
-                    }
+                    /*Update the border width*/
+                    const baseBorderWidth = scale + 'px';
+                    const thickBorderWidth = (2 * scale) + 'px';
+                    
+                    item.style.borderWidth = baseBorderWidth;
+                    
                     if(item.classList.contains('thick-right')) {
-                        item.style.borderRightWidth = `${2 * scale}px`;
+                        item.style.borderRightWidth = thickBorderWidth;
                     }
                     if(item.classList.contains('thick-bottom')) {
-                        item.style.borderBottomWidth = `${2 * scale}px`;
+                        item.style.borderBottomWidth = thickBorderWidth;
                     }
                 });
             }
