@@ -541,31 +541,70 @@
                     gridContainer.appendChild(div);
                 }
             }
-        };
 
-        function handleScale(scale) {
-            const container = document.getElementById('grid-container');
-            const items = document.querySelectorAll('.grid-item');
-            
-            // 设置容器缩放
-            container.style.transform = `scale(${scale})`;
-            
-            // 调整每个 grid item 的位置以保持边缘对齐
-            items.forEach(item => {
-                const originalLeft = parseFloat(item.dataset.originalLeft || item.style.left);
-                const originalTop = parseFloat(item.dataset.originalTop || item.style.top);
-                
-                // 存储原始位置（如果还没有存储）
-                if (!item.dataset.originalLeft) {
-                    item.dataset.originalLeft = originalLeft;
-                    item.dataset.originalTop = originalTop;
+            // 添加触摸事件处理
+            let initialDistance = 0;
+            let initialScale = 1;
+
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    // 计算两个触摸点之间的初始距离
+                    initialDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    initialScale = getCurrentScale(); // 获取当前缩放值
                 }
-                
-                // 根据缩放调整位置
-                item.style.left = `${originalLeft * scale}px`;
-                item.style.top = `${originalTop * scale}px`;
             });
-        }
+
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2) {
+                    e.preventDefault(); // 防止页面缩放
+
+                    // 计算新的距离
+                    const currentDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+
+                    // 计算缩放比例
+                    const scale = (currentDistance / initialDistance) * initialScale;
+                    
+                    // 限制缩放范围
+                    const limitedScale = Math.min(Math.max(scale, 0.5), 2);
+
+                    // 应用缩放到网格
+                    updateGridScale(limitedScale);
+                }
+            });
+
+            function getCurrentScale() {
+                // 获取当前网格的缩放值
+                const gridContainer = document.getElementById('grid-container');
+                const transform = gridContainer.style.transform;
+                const match = transform.match(/scale\((.*?)\)/);
+                return match ? parseFloat(match[1]) : 1;
+            }
+
+            function updateGridScale(scale) {
+                const gridItems = document.querySelectorAll('.grid-item');
+                gridItems.forEach(item => {
+                    // 更新每个网格项的尺寸
+                    const originalWidth = parseFloat(item.dataset.originalWidth || item.style.width);
+                    const originalHeight = parseFloat(item.dataset.originalHeight || item.style.height);
+                    
+                    item.style.width = `${originalWidth * scale}px`;
+                    item.style.height = `${originalHeight * scale}px`;
+                    
+                    // 更新位置以保持对齐
+                    const originalLeft = parseFloat(item.dataset.originalLeft || item.style.left);
+                    const originalTop = parseFloat(item.dataset.originalTop || item.style.top);
+                    
+                    item.style.left = `${originalLeft * scale}px`;
+                    item.style.top = `${originalTop * scale}px`;
+                });
+            }
+        };
     </script>
 </body>
 
