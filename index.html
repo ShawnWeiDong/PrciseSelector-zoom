@@ -518,7 +518,7 @@
         // Handle window load event
         window.onload = function () {
             const gridContainer = document.getElementById('grid-container');
-            const squareSize = Math.floor(Math.min(window.innerWidth, window.innerHeight) / 20);
+            window.squareSize = Math.floor(Math.min(window.innerWidth, window.innerHeight) / 20);
             const squaresPerRow = Math.floor(window.innerWidth / squareSize);
             const squaresPerColumn = Math.floor(window.innerHeight / squareSize);
 
