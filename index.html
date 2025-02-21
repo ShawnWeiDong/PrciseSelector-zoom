@@ -148,7 +148,8 @@
             position: relative;
             height: 100vh;
             width: 100vw;
-            overflow: auto;
+            overflow: hidden;
+            transform-origin: top left;
             z-index: 0;
         }
 
@@ -156,6 +157,7 @@
             position: absolute;
             border: 1px solid rgba(203, 203, 203, 0.20);
             box-sizing: border-box;
+            transform-origin: top left;
             z-index: 0;
         }
 
@@ -518,6 +520,7 @@
         // Handle window load event
         window.onload = function () {
             const gridContainer = document.getElementById('grid-container');
+            // 将squareSize定义为全局变量
             window.squareSize = Math.floor(Math.min(window.innerWidth, window.innerHeight) / 20);
             const squaresPerRow = Math.floor(window.innerWidth / squareSize);
             const squaresPerColumn = Math.floor(window.innerHeight / squareSize);
@@ -539,6 +542,30 @@
                 }
             }
         };
+
+        function handleScale(scale) {
+            const container = document.getElementById('grid-container');
+            const items = document.querySelectorAll('.grid-item');
+            
+            // 设置容器缩放
+            container.style.transform = `scale(${scale})`;
+            
+            // 调整每个 grid item 的位置以保持边缘对齐
+            items.forEach(item => {
+                const originalLeft = parseFloat(item.dataset.originalLeft || item.style.left);
+                const originalTop = parseFloat(item.dataset.originalTop || item.style.top);
+                
+                // 存储原始位置（如果还没有存储）
+                if (!item.dataset.originalLeft) {
+                    item.dataset.originalLeft = originalLeft;
+                    item.dataset.originalTop = originalTop;
+                }
+                
+                // 根据缩放调整位置
+                item.style.left = `${originalLeft * scale}px`;
+                item.style.top = `${originalTop * scale}px`;
+            });
+        }
     </script>
 </body>
 
