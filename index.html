@@ -270,7 +270,6 @@
 
             /* 处理多点触控缩放 */
             if (e.touches.length > 1) {
-                /* 获取两个触摸点 */
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 
@@ -280,11 +279,11 @@
                     touch2.clientY - touch1.clientY
                 );
 
-                /* 存储初始尺寸 */
+                /* 获取当前尺寸 */
                 const grid = document.getElementById('grid-container');
                 const sketches = document.querySelectorAll('.sketch');
-                const initialGridSize = grid.getBoundingClientRect().width;
-                const initialSketchSize = 150; // 初始尺寸150px
+                const currentGridSize = grid.getBoundingClientRect().width;
+                const currentSketchSize = sketches[0].getBoundingClientRect().width;
 
                 /* 添加touchmove监听 */
                 document.addEventListener('touchmove', function handleScale(e) {
@@ -301,15 +300,51 @@
                         /* 计算缩放比例 */
                         const scale = newDistance / initialDistance;
                         
-                        /* 更新grid容器尺寸 */
-                        grid.style.width = initialGridSize * scale + 'px';
-                        grid.style.height = initialGridSize * scale + 'px';
+                        /* 获取所有sketch元素 */
+                        const sketches = document.querySelectorAll('.sketch');
                         
-                        /* 更新所有sketch元素尺寸 */
+                        /* 计算整体包围框 */
+                        let minLeft = Infinity, maxRight = -Infinity;
+                        let minTop = Infinity, maxBottom = -Infinity;
+                        
                         sketches.forEach(sketch => {
-                            sketch.style.width = initialSketchSize * scale + 'px';
-                            sketch.style.height = initialSketchSize * scale + 'px';
+                            const rect = sketch.getBoundingClientRect();
+                            minLeft = Math.min(minLeft, rect.left);
+                            maxRight = Math.max(maxRight, rect.right);
+                            minTop = Math.min(minTop, rect.top);
+                            maxBottom = Math.max(maxBottom, rect.bottom);
                         });
+                        
+                        /* 计算整体中心点 */
+                        const centerX = (minLeft + maxRight) / 2;
+                        const centerY = (minTop + maxBottom) / 2;
+                        
+                        /* 更新所有sketch元素 */
+                        sketches.forEach(sketch => {
+                            const rect = sketch.getBoundingClientRect();
+                            
+                            /* 计算当前元素中心相对于整体中心的偏移 */
+                            const offsetX = rect.left + rect.width/2 - centerX;
+                            const offsetY = rect.top + rect.height/2 - centerY;
+                            
+                            /* 计算新尺寸 */
+                            const newWidth = currentSketchSize * scale;
+                            const newHeight = currentSketchSize * scale;
+                            
+                            /* 计算新位置（保持相对整体中心的比例） */
+                            const newLeft = centerX + offsetX * scale - newWidth/2;
+                            const newTop = centerY + offsetY * scale - newHeight/2;
+                            
+                            /* 应用新样式 */
+                            sketch.style.width = newWidth + 'px';
+                            sketch.style.height = newHeight + 'px';
+                            sketch.style.left = newLeft + 'px';
+                            sketch.style.top = newTop + 'px';
+                        });
+                        
+                        /* 更新grid容器尺寸（保持原有逻辑） */
+                        grid.style.width = currentGridSize * scale + 'px';
+                        grid.style.height = currentGridSize * scale + 'px';
                     }
                 });
 
