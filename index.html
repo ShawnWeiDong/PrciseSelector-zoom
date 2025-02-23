@@ -269,54 +269,65 @@
             }
         }, { passive: false });
 
+        /* 处理多点触控缩放 */
+        if (e.touches.length > 1) {
+            /* 获取两个触摸点 */
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            
+            /* 计算初始距离 */
+            const initialDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+
+            /* 存储初始尺寸 */
+            const grid = document.getElementById('grid-container');
+            const sketches = document.querySelectorAll('.sketch');
+            const initialGridSize = grid.getBoundingClientRect().width;
+            const initialSketchSize = 150; // 初始尺寸150px
+
+            /* 添加touchmove监听 */
+            document.addEventListener('touchmove', function handleScale(e) {
+                if (e.touches.length > 1) {
+                    const newTouch1 = e.touches[0];
+                    const newTouch2 = e.touches[1];
+                    
+                    /* 计算新距离 */
+                    const newDistance = Math.hypot(
+                        newTouch2.clientX - newTouch1.clientX,
+                        newTouch2.clientY - newTouch1.clientY
+                    );
+                    
+                    /* 计算缩放比例 */
+                    const scale = newDistance / initialDistance;
+                    
+                    /* 更新grid容器尺寸 */
+                    grid.style.width = initialGridSize * scale + 'px';
+                    grid.style.height = initialGridSize * scale + 'px';
+                    
+                    /* 更新所有sketch元素尺寸 */
+                    sketches.forEach(sketch => {
+                        sketch.style.width = initialSketchSize * scale + 'px';
+                        sketch.style.height = initialSketchSize * scale + 'px';
+                    });
+                }
+            });
+
+            /* 清理事件监听 */
+            document.addEventListener('touchend', function cleanup() {
+                document.removeEventListener('touchmove', handleScale);
+                document.removeEventListener('touchend', cleanup);
+            });
+        }
+
         /*Handle touchmove event*/
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
 
-            // 原有单点触控逻辑
+
             cursor.style.top = (e.touches[0].clientY - 100) + 'px';
             cursor.style.left = (e.touches[0].clientX - 50) + 'px';
-
-            /* 处理多点触控缩放 - 移动到这里 */
-            if(e.touches.length >= 2) {
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                
-                /* 计算初始距离 */
-                const currentDistance = Math.hypot(
-                    touch2.clientX - touch1.clientX,
-                    touch2.clientY - touch1.clientY
-                );
-
-                /* 计算缩放中心点 */
-                const centerX = (touch1.clientX + touch2.clientX) / 2;
-                const centerY = (touch1.clientY + touch2.clientY) / 2;
-
-                /* 获取所有需要缩放的元素 */
-                const elements = document.querySelectorAll('.sketch, #grid-container');
-                
-                elements.forEach(element => {
-                    const rect = element.getBoundingClientRect();
-                    const elementCenterX = rect.left + rect.width/2;
-                    const elementCenterY = rect.top + rect.height/2;
-                    
-                    /* 调整缩放基准值和计算方式 */
-                    const baseDistance = element.classList.contains('sketch') ? 1000 : 2000; // 区分sketch和grid的基准值
-                    const scaleFactor = (currentDistance - baseDistance) / baseDistance; // 相对变化比例
-                    
-                    /* 限制缩放范围 */
-                    const minScale = 0.5;
-                    const maxScale = 3;
-                    const newScale = Math.min(maxScale, Math.max(minScale, 1 + scaleFactor));
-
-                    /* 应用缩放变换 */
-                    element.style.transform = `
-                        translate(${(elementCenterX - centerX) * scaleFactor}px, 
-                                 ${(elementCenterY - centerY) * scaleFactor}px)
-                        scale(${newScale})
-                    `;
-                });
-            }
 
             /*If start is defined and not secondTap, adjust rectangle size*/
             if (start && !secondTap) {
@@ -327,7 +338,9 @@
             }
 
         }, { passive: false });
-        
+
+
+
         /*Handle touchend event*/
         document.addEventListener('touchend', function (e) {
             e.preventDefault();
