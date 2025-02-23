@@ -311,16 +311,6 @@
                         /* 计算相对于初始距离的比例 */
                         const scale = newDistance / initialDistance;
                         
-                        /* 应用初始尺寸的比例缩放 */
-                        grid.style.width = initialGridSize * scale + 'px';
-                        grid.style.height = initialGridSize * scale + 'px';
-                        
-                        /* 更新所有sketch元素 */
-                        sketches.forEach(sketch => {
-                            sketch.style.width = initialSketchSize * scale + 'px';
-                            sketch.style.height = initialSketchSize * scale + 'px';
-                        });
-
                         /* 获取grid元素 */
                         const rect = grid.getBoundingClientRect();
                         
