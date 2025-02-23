@@ -313,8 +313,9 @@
                             newTouch2.clientY - newTouch1.clientY
                         );
                         
-                        /* 计算缩放比例 */
-                        const scale = newDistance / initialDistance;
+                        /* 调整缩放系数 */
+                        const scaleFactor = 0.5; // 缩放敏感度系数 (0-1之间)
+                        const scale = 1 + (newDistance / initialDistance - 1) * scaleFactor;
                         
                         /* 获取grid元素 */
                         const rect = grid.getBoundingClientRect();
