@@ -285,19 +285,24 @@
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 
-                /* 记录初始距离和transform值 */
+                /* 记录初始距离和初始缩放比例 */
                 const initialDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
                 
-                /* 获取当前缩放状态 */
+                /* 获取需要缩放的元素 */
                 const grid = document.getElementById('grid-container');
                 const sketches = document.querySelectorAll('.sketch');
-                const currentGridTransform = getComputedStyle(grid).transform;
-                const currentSketchScale = parseFloat(sketches[0].style.transform?.replace('scale(', '') || 1);
+                
+                // 记录初始缩放状态
+                const initialGridScale = parseTransformScale(grid.style.transform);
+                const initialSketchScale = sketches.length > 0 
+                    ? parseTransformScale(sketches[0].style.transform)
+                    : 1;
 
-                document.addEventListener('touchmove', function handleScale(e) {
+                // 独立缩放处理函数
+                function handleScale(e) {
                     if (e.touches.length > 1) {
                         const newTouch1 = e.touches[0];
                         const newTouch2 = e.touches[1];
@@ -308,26 +313,40 @@
                             newTouch2.clientY - newTouch1.clientY
                         );
                         
-                        /* 计算缩放比例 */
+                        /* 计算缩放比例（基于初始比例） */
                         const scale = newDistance / initialDistance;
                         
-                        /* 应用grid缩放 */
-                        grid.style.transform = `${currentGridTransform} scale(${scale})`;
+                        /* 应用grid缩放（保留原有transform其他属性） */
+                        grid.style.transform = `scale(${initialGridScale * scale})`;
                         
-                        /* 应用sketch缩放 */
-                        sketches.forEach(sketch => {
-                            sketch.style.transform = `scale(${currentSketchScale * scale})`;
-                        });
+                        /* 应用sketch缩放（如果有sketch元素） */
+                        if(sketches.length > 0) {
+                            sketches.forEach(sketch => {
+                                sketch.style.transform = `scale(${initialSketchScale * scale})`;
+                            });
+                        }
                     }
-                });
+                }
+
+                // 添加事件监听前先移除旧的
+                document.removeEventListener('touchmove', handleScale);
+                document.addEventListener('touchmove', handleScale);
 
                 /* 清理事件监听 */
-                document.addEventListener('touchend', function cleanup() {
+                function cleanup() {
                     document.removeEventListener('touchmove', handleScale);
                     document.removeEventListener('touchend', cleanup);
-                });
+                }
+                document.addEventListener('touchend', cleanup);
             }
         }, { passive: false });
+
+        /* 辅助函数：解析transform的scale值 */
+        function parseTransformScale(transform) {
+            if (!transform) return 1;
+            const match = transform.match(/scale\(([\d.]+)\)/);
+            return match ? parseFloat(match[1]) : 1;
+        }
 
         /* 合并touchmove事件处理 */
         document.addEventListener('touchmove', function (e) {
@@ -339,14 +358,13 @@
                 cursor.style.left = (e.touches[0].clientX - 50) + 'px';
             }
 
-            /*If start is defined and not secondTap, adjust rectangle size*/
+            /* 调整矩形大小 */
             if (start && !secondTap) {
                 rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
                 rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
                 snackbar.style.display = 'block';
-                snackbar.innerHTML = '<p>slide to hover over the face.</p>'; /*Update the snackbar text*/
+                snackbar.innerHTML = '<p>slide to hover over the face.</p>';
             }
-
         }, { passive: false });
 
 
