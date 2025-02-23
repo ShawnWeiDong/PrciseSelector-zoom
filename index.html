@@ -236,31 +236,40 @@
     </div>
 
     <script>
-        /*Initialize variables*/
+        /* Initialize variables */
         var cursor = document.getElementById('cursor');
         var rectangle = document.getElementById('rectangle');
         var start = null;
         var secondTap = false;
         var tapCount = 0;
         var tapTimeout = null;
-        var snackbar = document.querySelector('.snackbar'); /*Get the snackbar element*/
-        /*Initialize a counter for the rectangles*/
+        var snackbar = document.querySelector('.snackbar'); /* Get the snackbar element */
         var rectangleCount = 0;
         var rectangle;
 
-        /*修改属性存储*/
+        /* Store initial properties */
         var initialScale = 1.0;
         var initialDistance = 0;
         var initialImageCenter = { x: 0, y: 0 };
         var isCursorActive = false;
 
-        /*Handle touchstart event*/
+        /* Handle touchstart event */
         document.addEventListener('touchstart', function (e) {
             e.preventDefault();
             clearTimeout(tapTimeout);
             tapCount++;
-    
-            /*If double tap, display the cursor*/
+
+            /* Handle multi-touch zoom */
+            if (e.touches.length === 2) {
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialImageCenter.x = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                initialImageCenter.y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            }
+
+            /* If double tap, display the cursor */
             if (tapCount === 2) {
                 cursor.style.top = (e.touches[0].clientY - 100) + 'px';
                 cursor.style.left = (e.touches[0].clientX - 50) + 'px';
@@ -270,28 +279,40 @@
 
             if (cursor.style.display === 'block') {
                 snackbar.style.display = 'block'; 
-                snackbar.innerHTML = '<p>slide to hover over the face.</p>';
+                snackbar.innerHTML = '<p>Slide to hover over the face.</p>';
             }
         }, { passive: false });
 
-        /*Handle touchmove event*/
+        /* Handle touchmove event */
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
 
-            cursor.style.top = (e.touches[0].clientY - 100) + 'px';
-            cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+            if (e.touches.length === 2) {
+                var currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
 
-            /*If start is defined and not secondTap, adjust rectangle size*/
-            if (start && !secondTap) {
-                rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
-                rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
-                snackbar.style.display = 'block';
-                snackbar.innerHTML = '<p>slide to hover over the face.</p>'; /*Update the snackbar text*/
+                var scale = currentDistance / initialDistance;
+                // Apply zoom logic, e.g., adjust the image scale
+                var image = document.querySelector('#grid-container img');
+                image.style.transform = 'scale(' + (initialScale * scale) + ')';
+                image.style.transformOrigin = `${initialImageCenter.x}px ${initialImageCenter.y}px`;
+            } else {
+                cursor.style.top = (e.touches[0].clientY - 100) + 'px';
+                cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+
+                /* If start is defined and not secondTap, adjust rectangle size */
+                if (start && !secondTap) {
+                    rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
+                    rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
+                    snackbar.style.display = 'block';
+                    snackbar.innerHTML = '<p>Slide to hover over the face.</p>'; /* Update the snackbar text */
+                }
             }
-
         }, { passive: false });
 
-        /*Handle touchend event*/
+        /* Handle touchend event */
         document.addEventListener('touchend', function (e) {
             e.preventDefault();
 
