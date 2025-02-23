@@ -285,17 +285,17 @@
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 
-                /* 记录初始距离和初始尺寸 */
+                /* 记录初始距离和transform值 */
                 const initialDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
                 
-                /* 获取初始尺寸 */
+                /* 获取当前缩放状态 */
                 const grid = document.getElementById('grid-container');
                 const sketches = document.querySelectorAll('.sketch');
-                const initialGridSize = grid.getBoundingClientRect().width;  // 改为记录初始尺寸
-                const initialSketchSize = sketches[0].getBoundingClientRect().width;  // 改为记录初始尺寸
+                const currentGridTransform = getComputedStyle(grid).transform;
+                const currentSketchScale = parseFloat(sketches[0].style.transform?.replace('scale(', '') || 1);
 
                 document.addEventListener('touchmove', function handleScale(e) {
                     if (e.touches.length > 1) {
@@ -308,66 +308,15 @@
                             newTouch2.clientY - newTouch1.clientY
                         );
                         
-                        /* 计算相对于初始距离的比例 */
+                        /* 计算缩放比例 */
                         const scale = newDistance / initialDistance;
                         
-                        /* 获取grid元素 */
-                        const rect = grid.getBoundingClientRect();
+                        /* 应用grid缩放 */
+                        grid.style.transform = `${currentGridTransform} scale(${scale})`;
                         
-                        /* 计算当前grid中心点相对于视口的坐标 */
-                        const gridCenterX = rect.left + rect.width / 2;
-                        const gridCenterY = rect.top + rect.height / 2;
-                        
-                        /* 计算偏移量（双指中点与grid中心的差值） */
-                        const offsetX = (newTouch1.clientX + newTouch2.clientX) / 2 - gridCenterX;
-                        const offsetY = (newTouch1.clientY + newTouch2.clientY) / 2 - gridCenterY;
-                        
-                        /* 应用缩放和位移 */
-                        grid.style.transform = `
-                            translate(${offsetX * (scale - 1)}px, ${offsetY * (scale - 1)}px)
-                            scale(${scale})
-                        `;
-                        
-                        /* 保持sketch的原有缩放逻辑 */
-                        const sketches = document.querySelectorAll('.sketch');
-                        
-                        /* 计算整体包围框 */
-                        let minLeft = Infinity, maxRight = -Infinity;
-                        let minTop = Infinity, maxBottom = -Infinity;
-                        
+                        /* 应用sketch缩放 */
                         sketches.forEach(sketch => {
-                            const rect = sketch.getBoundingClientRect();
-                            minLeft = Math.min(minLeft, rect.left);
-                            maxRight = Math.max(maxRight, rect.right);
-                            minTop = Math.min(minTop, rect.top);
-                            maxBottom = Math.max(maxBottom, rect.bottom);
-                        });
-                        
-                        /* 计算整体中心点 */
-                        const centerX = (minLeft + maxRight) / 2;
-                        const centerY = (minTop + maxBottom) / 2;
-                        
-                        /* 更新所有sketch元素 */
-                        sketches.forEach(sketch => {
-                            const rect = sketch.getBoundingClientRect();
-                            
-                            /* 计算当前元素中心相对于整体中心的偏移 */
-                            const offsetSketchX = rect.left + rect.width/2 - centerX;
-                            const offsetSketchY = rect.top + rect.height/2 - centerY;
-                            
-                            /* 计算新尺寸 */
-                            const newWidth = initialSketchSize * scale;
-                            const newHeight = initialSketchSize * scale;
-                            
-                            /* 计算新位置（保持相对整体中心的比例） */
-                            const newLeft = centerX + offsetSketchX * scale - newWidth/2;
-                            const newTop = centerY + offsetSketchY * scale - newHeight/2;
-                            
-                            /* 应用新样式 */
-                            sketch.style.width = newWidth + 'px';
-                            sketch.style.height = newHeight + 'px';
-                            sketch.style.left = newLeft + 'px';
-                            sketch.style.top = newTop + 'px';
+                            sketch.style.transform = `scale(${currentSketchScale * scale})`;
                         });
                     }
                 });
