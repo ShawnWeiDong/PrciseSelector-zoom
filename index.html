@@ -400,35 +400,6 @@
                 cursor.style.left = (e.touches[0].clientX - 50) + 'px';
             }
 
-            /* 多点触控缩放 */
-            if (e.touches.length > 1) {
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                
-                /* 计算缩放比例 */
-                const scale = touch2.clientX / touch1.clientX;
-                
-                /* 更新grid容器尺寸 */
-                const grid = document.getElementById('grid-container');
-                const sketches = document.querySelectorAll('.sketch');
-                const currentGridSize = grid.getBoundingClientRect().width;
-                
-                /* 更新grid容器尺寸 */
-                grid.style.width = currentGridSize * scale + 'px';
-                grid.style.height = currentGridSize * scale + 'px';
-                
-                /* 更新所有sketch元素尺寸 */
-                sketches.forEach(sketch => {
-                    const currentSketchSize = sketch.getBoundingClientRect().width;
-                    sketch.style.width = currentSketchSize * scale + 'px';
-                    sketch.style.height = currentSketchSize * scale + 'px';
-                });
-
-                /* 同时更新光标位置（使用第一个触摸点） */
-                cursor.style.top = (touch1.clientY - 100) + 'px';
-                cursor.style.left = (touch1.clientX - 50) + 'px';
-            }
-
             /*If start is defined and not secondTap, adjust rectangle size*/
             if (start && !secondTap) {
                 rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
