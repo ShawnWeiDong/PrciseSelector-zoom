@@ -161,6 +161,8 @@
             transform-origin: center center;
             transition: transform 0.1s; /* 可选，添加平滑过渡 */
             z-index: 0;
+            contain: strict;
+            isolation: isolate;
         }
 
         .toolbar {
@@ -171,11 +173,12 @@
             height: 60px;
             /* Adjust width as needed */
             background-color: #F5F5F5;
-            z-index: 1000;
+            z-index: 1001;
             display: flex;       /* 添加 flex 布局以便于内部元素排列*/
             justify-content: center;  /* 水平居中内部元素*/
             align-items: center;     /* 垂直居中内部元素*/
             gap: 20px;  /* 圆形之间的间距 */
+            transform: translateZ(0);
         }
 
         .toolbar .circle {
@@ -193,7 +196,7 @@
             width: 100%;
             height: 60px;
             background-color: #d9d9d9;
-            z-index: 1000;
+            z-index: 1001;
             display: flex;
             justify-content: flex-start;
             align-items: center;
@@ -201,6 +204,7 @@
             font-weight: bold;
             color: #333333;
             padding-left: 20px;
+            transform: translateZ(0);
         }
         
     </style>    
@@ -255,8 +259,15 @@
         document.addEventListener('touchstart', function (e) {
             e.preventDefault();
             clearTimeout(tapTimeout);
+            
+            /* 双指操作时重置点击计数 */
+            if (e.touches.length > 1) {
+                tapCount = 0;
+                return;
+            }
+            
             tapCount++;
-    
+            
             /*If double tap, display the cursor*/
             if (tapCount === 2) {
                 cursor.style.top = (e.touches[0].clientY - 100) + 'px';
@@ -306,7 +317,6 @@
                         const scale = newDistance / initialDistance;
                         
                         /* 获取grid元素 */
-                        const grid = document.getElementById('grid-container');
                         const rect = grid.getBoundingClientRect();
                         
                         /* 计算当前grid中心点相对于视口的坐标 */
@@ -366,7 +376,7 @@
                         });
                         
                         /* 更新grid容器尺寸 */
-                        const grid = document.getElementById('grid-container');
+                        let grid = typeof grid !== 'undefined' ? grid : document.getElementById('grid-container');
                         const currentGridSize = grid.getBoundingClientRect().width;
                         grid.style.width = currentGridSize * scale + 'px';
                         grid.style.height = currentGridSize * scale + 'px';
