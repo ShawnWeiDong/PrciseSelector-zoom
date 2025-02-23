@@ -273,9 +273,49 @@
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
 
-
+            // 原有单点触控逻辑
             cursor.style.top = (e.touches[0].clientY - 100) + 'px';
             cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+
+            /* 处理多点触控缩放 - 移动到这里 */
+            if(e.touches.length >= 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                
+                /* 计算初始距离 */
+                const currentDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+
+                /* 计算缩放中心点 */
+                const centerX = (touch1.clientX + touch2.clientX) / 2;
+                const centerY = (touch1.clientY + touch2.clientY) / 2;
+
+                /* 获取所有需要缩放的元素 */
+                const elements = document.querySelectorAll('.sketch, .grid');
+                
+                elements.forEach(element => {
+                    const rect = element.getBoundingClientRect();
+                    const elementCenterX = rect.left + rect.width/2;
+                    const elementCenterY = rect.top + rect.height/2;
+                    
+                    /* 计算相对于缩放中心的比例 */
+                    const scaleFactor = currentDistance / 500; // 500是初始距离基准值
+                    const translateX = (elementCenterX - centerX) * scaleFactor;
+                    const translateY = (elementCenterY - centerY) * scaleFactor;
+
+                    /* 应用缩放变换 */
+                    element.style.transform = `
+                        translate(${translateX}px, ${translateY}px)
+                        scale(${1 + scaleFactor})
+                    `;
+                    
+                    /* 保持宽高比例同步缩放 */
+                    element.style.width = `${rect.width * (1 + scaleFactor)}px`;
+                    element.style.height = `${rect.height * (1 + scaleFactor)}px`;
+                });
+            }
 
             /*If start is defined and not secondTap, adjust rectangle size*/
             if (start && !secondTap) {
@@ -286,7 +326,7 @@
             }
 
         }, { passive: false });
-
+        
         /*Handle touchend event*/
         document.addEventListener('touchend', function (e) {
             e.preventDefault();
