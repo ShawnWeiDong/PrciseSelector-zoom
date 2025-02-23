@@ -285,38 +285,42 @@
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 
-                /* 计算初始距离 */
+                /* 记录初始距离和初始尺寸 */
                 const initialDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
-
-                /* 获取当前尺寸 */
+                
+                /* 获取初始尺寸 */
                 const grid = document.getElementById('grid-container');
                 const sketches = document.querySelectorAll('.sketch');
-                const currentGridSize = grid.getBoundingClientRect().width;
-                const currentSketchSize = sketches[0].getBoundingClientRect().width;
+                const initialGridSize = grid.getBoundingClientRect().width;  // 改为记录初始尺寸
+                const initialSketchSize = sketches[0].getBoundingClientRect().width;  // 改为记录初始尺寸
 
-                /* 添加touchmove监听 */
                 document.addEventListener('touchmove', function handleScale(e) {
                     if (e.touches.length > 1) {
                         const newTouch1 = e.touches[0];
                         const newTouch2 = e.touches[1];
                         
-                        /* 计算当前双指中点 */
-                        const currentCenterX = (newTouch1.clientX + newTouch2.clientX) / 2;
-                        const currentCenterY = (newTouch1.clientY + newTouch2.clientY) / 2;
-                        
-                        /* 计算新距离 */
+                        /* 计算当前距离 */
                         const newDistance = Math.hypot(
                             newTouch2.clientX - newTouch1.clientX,
                             newTouch2.clientY - newTouch1.clientY
                         );
                         
-                        /* 调整缩放系数 */
-                        const scaleFactor = 0.3; // 缩放敏感度系数 (0-1之间)
-                        const scale = 1 + (newDistance / initialDistance - 1) * scaleFactor;
+                        /* 计算相对于初始距离的比例 */
+                        const scale = newDistance / initialDistance;
                         
+                        /* 应用初始尺寸的比例缩放 */
+                        grid.style.width = initialGridSize * scale + 'px';
+                        grid.style.height = initialGridSize * scale + 'px';
+                        
+                        /* 更新所有sketch元素 */
+                        sketches.forEach(sketch => {
+                            sketch.style.width = initialSketchSize * scale + 'px';
+                            sketch.style.height = initialSketchSize * scale + 'px';
+                        });
+
                         /* 获取grid元素 */
                         const rect = grid.getBoundingClientRect();
                         
@@ -325,8 +329,8 @@
                         const gridCenterY = rect.top + rect.height / 2;
                         
                         /* 计算偏移量（双指中点与grid中心的差值） */
-                        const offsetX = currentCenterX - gridCenterX;
-                        const offsetY = currentCenterY - gridCenterY;
+                        const offsetX = (newTouch1.clientX + newTouch2.clientX) / 2 - gridCenterX;
+                        const offsetY = (newTouch1.clientY + newTouch2.clientY) / 2 - gridCenterY;
                         
                         /* 应用缩放和位移 */
                         grid.style.transform = `
@@ -362,8 +366,8 @@
                             const offsetSketchY = rect.top + rect.height/2 - centerY;
                             
                             /* 计算新尺寸 */
-                            const newWidth = currentSketchSize * scale;
-                            const newHeight = currentSketchSize * scale;
+                            const newWidth = initialSketchSize * scale;
+                            const newHeight = initialSketchSize * scale;
                             
                             /* 计算新位置（保持相对整体中心的比例） */
                             const newLeft = centerX + offsetSketchX * scale - newWidth/2;
@@ -375,12 +379,6 @@
                             sketch.style.left = newLeft + 'px';
                             sketch.style.top = newTop + 'px';
                         });
-                        
-                        /* 更新grid容器尺寸 */
-                        let grid = typeof grid !== 'undefined' ? grid : document.getElementById('grid-container');
-                        const currentGridSize = grid.getBoundingClientRect().width;
-                        grid.style.width = currentGridSize * scale + 'px';
-                        grid.style.height = currentGridSize * scale + 'px';
                     }
                 });
 
