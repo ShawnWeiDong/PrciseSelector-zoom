@@ -267,67 +267,98 @@
                 snackbar.style.display = 'block'; 
                 snackbar.innerHTML = '<p>slide to hover over the face.</p>';
             }
+
+            /* 处理多点触控缩放 */
+            if (e.touches.length > 1) {
+                /* 获取两个触摸点 */
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                
+                /* 计算初始距离 */
+                const initialDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+
+                /* 存储初始尺寸 */
+                const grid = document.getElementById('grid-container');
+                const sketches = document.querySelectorAll('.sketch');
+                const initialGridSize = grid.getBoundingClientRect().width;
+                const initialSketchSize = 150; // 初始尺寸150px
+
+                /* 添加touchmove监听 */
+                document.addEventListener('touchmove', function handleScale(e) {
+                    if (e.touches.length > 1) {
+                        const newTouch1 = e.touches[0];
+                        const newTouch2 = e.touches[1];
+                        
+                        /* 计算新距离 */
+                        const newDistance = Math.hypot(
+                            newTouch2.clientX - newTouch1.clientX,
+                            newTouch2.clientY - newTouch1.clientY
+                        );
+                        
+                        /* 计算缩放比例 */
+                        const scale = newDistance / initialDistance;
+                        
+                        /* 更新grid容器尺寸 */
+                        grid.style.width = initialGridSize * scale + 'px';
+                        grid.style.height = initialGridSize * scale + 'px';
+                        
+                        /* 更新所有sketch元素尺寸 */
+                        sketches.forEach(sketch => {
+                            sketch.style.width = initialSketchSize * scale + 'px';
+                            sketch.style.height = initialSketchSize * scale + 'px';
+                        });
+                    }
+                });
+
+                /* 清理事件监听 */
+                document.addEventListener('touchend', function cleanup() {
+                    document.removeEventListener('touchmove', handleScale);
+                    document.removeEventListener('touchend', cleanup);
+                });
+            }
         }, { passive: false });
 
-        /* 处理多点触控缩放 */
-        if (e.touches.length > 1) {
-            /* 获取两个触摸点 */
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            
-            /* 计算初始距离 */
-            const initialDistance = Math.hypot(
-                touch2.clientX - touch1.clientX,
-                touch2.clientY - touch1.clientY
-            );
-
-            /* 存储初始尺寸 */
-            const grid = document.getElementById('grid-container');
-            const sketches = document.querySelectorAll('.sketch');
-            const initialGridSize = grid.getBoundingClientRect().width;
-            const initialSketchSize = 150; // 初始尺寸150px
-
-            /* 添加touchmove监听 */
-            document.addEventListener('touchmove', function handleScale(e) {
-                if (e.touches.length > 1) {
-                    const newTouch1 = e.touches[0];
-                    const newTouch2 = e.touches[1];
-                    
-                    /* 计算新距离 */
-                    const newDistance = Math.hypot(
-                        newTouch2.clientX - newTouch1.clientX,
-                        newTouch2.clientY - newTouch1.clientY
-                    );
-                    
-                    /* 计算缩放比例 */
-                    const scale = newDistance / initialDistance;
-                    
-                    /* 更新grid容器尺寸 */
-                    grid.style.width = initialGridSize * scale + 'px';
-                    grid.style.height = initialGridSize * scale + 'px';
-                    
-                    /* 更新所有sketch元素尺寸 */
-                    sketches.forEach(sketch => {
-                        sketch.style.width = initialSketchSize * scale + 'px';
-                        sketch.style.height = initialSketchSize * scale + 'px';
-                    });
-                }
-            });
-
-            /* 清理事件监听 */
-            document.addEventListener('touchend', function cleanup() {
-                document.removeEventListener('touchmove', handleScale);
-                document.removeEventListener('touchend', cleanup);
-            });
-        }
-
-        /*Handle touchmove event*/
+        /* 合并touchmove事件处理 */
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
 
+            /* 单指移动光标 */
+            if (e.touches.length === 1) {
+                cursor.style.top = (e.touches[0].clientY - 100) + 'px';
+                cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+            }
 
-            cursor.style.top = (e.touches[0].clientY - 100) + 'px';
-            cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+            /* 多点触控缩放 */
+            if (e.touches.length > 1) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                
+                /* 计算缩放比例 */
+                const scale = touch2.clientX / touch1.clientX;
+                
+                /* 更新grid容器尺寸 */
+                const grid = document.getElementById('grid-container');
+                const sketches = document.querySelectorAll('.sketch');
+                const initialGridSize = grid.getBoundingClientRect().width;
+                const initialSketchSize = 150; // 初始尺寸150px
+                
+                /* 更新grid容器尺寸 */
+                grid.style.width = initialGridSize * scale + 'px';
+                grid.style.height = initialGridSize * scale + 'px';
+                
+                /* 更新所有sketch元素尺寸 */
+                sketches.forEach(sketch => {
+                    sketch.style.width = initialSketchSize * scale + 'px';
+                    sketch.style.height = initialSketchSize * scale + 'px';
+                });
+
+                /* 同时更新光标位置（使用第一个触摸点） */
+                cursor.style.top = (touch1.clientY - 100) + 'px';
+                cursor.style.left = (touch1.clientX - 50) + 'px';
+            }
 
             /*If start is defined and not secondTap, adjust rectangle size*/
             if (start && !secondTap) {
