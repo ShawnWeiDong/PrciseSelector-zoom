@@ -248,9 +248,10 @@
         var rectangleCount = 0;
         var rectangle;
 
-        // 添加属性存储初始状态
+        /*修改属性存储*/
         var initialScale = 1.0;
-        var initialCenter = { x: 0, y: 0 };
+        var initialDistance = 0;
+        var initialImageCenter = { x: 0, y: 0 };
         var isCursorActive = false;
 
         /*Handle touchstart event*/
@@ -382,7 +383,7 @@
          if(!cursor || !sketches.length || cursor.style.display === 'none') return;
          
          const cursorRect = cursor.getBoundingClientRect();
-         // 计算cursor中心点坐标
+         /*计算cursor中心点坐标*/
          const cursorCenterX = cursorRect.left + cursorRect.width / 2;
          const cursorCenterY = cursorRect.top + cursorRect.height / 2;
          
@@ -430,12 +431,12 @@
              /*当cursor中心在sketch上方时改变sketch样式*/
              if(isInside) {
                  sketch.style.backgroundColor = 'rgba(202,234,248,0.3)';
-                 if(!isOnEdge) { // 如果不在边缘,才改变边框颜色
+                 if(!isOnEdge) { /* 如果不在边缘,才改变边框颜色*/
                      sketch.style.borderColor = '#000000';
                  }
              } else {
                  sketch.style.backgroundColor = 'rgba(147, 209, 237, 0.3)';
-                 if(!isOnEdge) { // 如果不在边缘,才改变边框颜色
+                 if(!isOnEdge) { /* 如果不在边缘,才改变边框颜色*/
                      sketch.style.borderColor = '#93d1ed';
                  }
              }
