@@ -285,59 +285,57 @@
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
                 
-                /* 记录初始距离和初始缩放比例 */
+                /*计算初始特征值*/
                 const initialDistance = Math.hypot(
                     touch2.clientX - touch1.clientX,
                     touch2.clientY - touch1.clientY
                 );
+                const centerX = (touch1.clientX + touch2.clientX) / 2;
+                const centerY = (touch1.clientY + touch2.clientY) / 2;
                 
-                /* 获取需要缩放的元素 */
+                /*获取当前缩放状态*/
                 const grid = document.getElementById('grid-container');
                 const sketches = document.querySelectorAll('.sketch');
-                
-                // 记录初始缩放状态
-                const initialGridScale = parseTransformScale(grid.style.transform);
-                const initialSketchScale = sketches.length > 0 
-                    ? parseTransformScale(sketches[0].style.transform)
-                    : 1;
+                const currentGridScale = parseTransformScale(grid.style.transform) || 1;
+                const currentSketchScale = parseTransformScale(sketches[0]?.style.transform) || 1;
 
-                // 独立缩放处理函数
+                /*创建缩放处理函数*/
                 function handleScale(e) {
                     if (e.touches.length > 1) {
                         const newTouch1 = e.touches[0];
                         const newTouch2 = e.touches[1];
                         
-                        /* 计算当前距离 */
+                        /*计算新特征值*/
                         const newDistance = Math.hypot(
                             newTouch2.clientX - newTouch1.clientX,
                             newTouch2.clientY - newTouch1.clientY
                         );
+                        const newCenterX = (newTouch1.clientX + newTouch2.clientX) / 2;
+                        const newCenterY = (newTouch1.clientY + newTouch2.clientY) / 2;
                         
-                        /* 计算缩放比例（基于初始比例） */
-                        const scale = newDistance / initialDistance;
+                        /*计算缩放比例（限制在0.5-3倍之间）*/
+                        let scale = Math.min(Math.max(newDistance / initialDistance, 0.5), 3);
                         
-                        /* 应用grid缩放（保留原有transform其他属性） */
-                        grid.style.transform = `scale(${initialGridScale * scale})`;
+                        /*应用grid缩放（带中心点偏移补偿）*/
+                        grid.style.transformOrigin = `${centerX}px ${centerY}px`;
+                        grid.style.transform = `scale(${currentGridScale * scale})`;
                         
-                        /* 应用sketch缩放（如果有sketch元素） */
+                        /*应用sketch缩放*/
                         if(sketches.length > 0) {
                             sketches.forEach(sketch => {
-                                sketch.style.transform = `scale(${initialSketchScale * scale})`;
+                                sketch.style.transformOrigin = `${centerX}px ${centerY}px`;
+                                sketch.style.transform = `scale(${currentSketchScale * scale})`;
                             });
                         }
                     }
                 }
 
-                // 添加事件监听前先移除旧的
-                document.removeEventListener('touchmove', handleScale);
+                /*绑定和解绑事件*/
                 document.addEventListener('touchmove', handleScale);
-
-                /* 清理事件监听 */
-                function cleanup() {
+                document.addEventListener('touchend', function cleanup() {
                     document.removeEventListener('touchmove', handleScale);
                     document.removeEventListener('touchend', cleanup);
-                }
-                document.addEventListener('touchend', cleanup);
+                });
             }
         }, { passive: false });
 
