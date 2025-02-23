@@ -293,27 +293,28 @@
                 const centerY = (touch1.clientY + touch2.clientY) / 2;
 
                 /* 获取所有需要缩放的元素 */
-                const elements = document.querySelectorAll('.sketch, .grid');
+                const elements = document.querySelectorAll('.sketch, #grid-container');
                 
                 elements.forEach(element => {
                     const rect = element.getBoundingClientRect();
                     const elementCenterX = rect.left + rect.width/2;
                     const elementCenterY = rect.top + rect.height/2;
                     
-                    /* 计算相对于缩放中心的比例 */
-                    const scaleFactor = currentDistance / 500; // 500是初始距离基准值
-                    const translateX = (elementCenterX - centerX) * scaleFactor;
-                    const translateY = (elementCenterY - centerY) * scaleFactor;
+                    /* 调整缩放基准值和计算方式 */
+                    const baseDistance = element.classList.contains('sketch') ? 1000 : 2000; // 区分sketch和grid的基准值
+                    const scaleFactor = (currentDistance - baseDistance) / baseDistance; // 相对变化比例
+                    
+                    /* 限制缩放范围 */
+                    const minScale = 0.5;
+                    const maxScale = 3;
+                    const newScale = Math.min(maxScale, Math.max(minScale, 1 + scaleFactor));
 
                     /* 应用缩放变换 */
                     element.style.transform = `
-                        translate(${translateX}px, ${translateY}px)
-                        scale(${1 + scaleFactor})
+                        translate(${(elementCenterX - centerX) * scaleFactor}px, 
+                                 ${(elementCenterY - centerY) * scaleFactor}px)
+                        scale(${newScale})
                     `;
-                    
-                    /* 保持宽高比例同步缩放 */
-                    element.style.width = `${rect.width * (1 + scaleFactor)}px`;
-                    element.style.height = `${rect.height * (1 + scaleFactor)}px`;
                 });
             }
 
