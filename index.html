@@ -223,8 +223,10 @@
         <div class="circle"></div>
         <div class="circle"></div>
     </div>
-    <div class="sketch" style="position: fixed; left: calc(50% - 70px); top: calc(50% - 30px); width: 150px; height: 150px;"></div>
-    <div class="sketch" style="position: fixed; left: calc(50% + 70px); top: calc(50% + 30px); width: 150px; height: 150px;"></div>
+    <div id="sketch-container" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+        <div class="sketch" style="position: absolute; left: -70px; top: -30px; width: 150px; height: 150px;"></div>
+        <div class="sketch" style="position: absolute; left: 70px; top: 30px; width: 150px; height: 150px;"></div>
+    </div>
     <svg id="cursor" width="87" height="87" viewBox="0 0 87 87" fill="none" xmlns="http://www.w3.org/2000/svg">
         <line y1="43.5" x2="38" y2="43.5" stroke="black" />
         <line x1="49" y1="43.5" x2="87" y2="43.5" stroke="black" />
@@ -251,6 +253,7 @@
         var rectangle;
         /*缩放变量*/
         var gridContainer = document.getElementById('grid-container');
+        var sketchContainer = document.getElementById('sketch-container');
         var initialDistance = 0;
         var currentScale = 1;
         var isZooming = false;
@@ -302,8 +305,9 @@
                 // 计算新的缩放值,限制缩放范围在0.5到3之间
                 currentScale = Math.min(Math.max(lastScale * scale, 0.5), 3);
                 
-                // 应用变换
+                // 应用变换到网格和sketch容器
                 gridContainer.style.transform = `scale(${currentScale})`;
+                sketchContainer.style.transform = `translate(-50%, -50%) scale(${currentScale})`;
                 return;
             }
 
