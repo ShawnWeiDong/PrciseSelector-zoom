@@ -328,7 +328,7 @@
 
             if (cursor.style.display === 'block') {
                 snackbar.style.display = 'block'; 
-                snackbar.innerHTML = '<p>slide to hover over the face.</p>';
+                snackbar.innerHTML = '<p>use another finger to zoom in, the selector position will be stored</p>';
             }
         }, { passive: false });
 
@@ -370,7 +370,7 @@
                 rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
                 rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
                 snackbar.style.display = 'block';
-                snackbar.innerHTML = '<p>slide to hover over the face.</p>'; /*Update the snackbar text*/
+                snackbar.innerHTML = '<p>Doubletap and hold to continue selecting the border.</p>'; /*Update the snackbar text*/
             }
 
         }, { passive: false });
