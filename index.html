@@ -209,7 +209,7 @@
 
 <body>
     <div class="globalheader">
-        <span>prcise selector</span>
+        <p>Precise selector-Zoom in effect</p>
     </div>
     <div class="snackbar">
         <p><code>Doubletap + hold</code> to access precise
@@ -259,7 +259,7 @@
         var isZooming = false;
         var lastScale = 1;
         
-        // 新增:记录cursor相对位置和初始触摸点的变量
+        /* 新增:记录cursor相对位置和初始触摸点的变量*/
         var lastCursorPosition = {
             x: 0,
             y: 0,
@@ -328,7 +328,7 @@
 
             if (cursor.style.display === 'block') {
                 snackbar.style.display = 'block'; 
-                snackbar.innerHTML = '<p>use another finger to zoom in, the selector position will be stored</p>';
+                snackbar.innerHTML = '<p>Two finger to zoom in, the selector position will be stored</p>';
             }
         }, { passive: false });
 
