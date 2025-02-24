@@ -158,8 +158,10 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            transform-origin: top left;
+            transform-origin: center center;  /* 修改变换原点为中心 */
             z-index: 0;
+            transition: transform 0.1s ease-out;  /* 添加平滑过渡效果 */
+           
         }
 
         .toolbar {
@@ -236,85 +238,98 @@
     </div>
 
     <script>
-        /* Initialize variables */
+        /*Initialize variables*/
         var cursor = document.getElementById('cursor');
         var rectangle = document.getElementById('rectangle');
         var start = null;
         var secondTap = false;
         var tapCount = 0;
         var tapTimeout = null;
-        var snackbar = document.querySelector('.snackbar'); /* Get the snackbar element */
+        var snackbar = document.querySelector('.snackbar'); /*Get the snackbar element*/
+        /*Initialize a counter for the rectangles*/
         var rectangleCount = 0;
         var rectangle;
-
-        /* Store initial properties */
-        var initialScale = 1.0;
+        /*缩放变量*/
+        var gridContainer = document.getElementById('grid-container');
         var initialDistance = 0;
-        var initialImageCenter = { x: 0, y: 0 };
-        var isCursorActive = false;
+        var currentScale = 1;
+        var isZooming = false;
+        var lastScale = 1;
 
-        /* Handle touchstart event */
+        /*计算两个触摸点之间的距离*/
+        function getDistance(touch1, touch2) {
+            const dx = touch1.clientX - touch2.clientX;
+            const dy = touch1.clientY - touch2.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+ 
+        /*Handle touchstart event*/
         document.addEventListener('touchstart', function (e) {
             e.preventDefault();
             clearTimeout(tapTimeout);
-            tapCount++;
-
-            /* Handle multi-touch zoom */
-            if (e.touches.length === 2) {
-                initialDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                initialImageCenter.x = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                initialImageCenter.y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            
+            // 处理双指触控
+            if(e.touches.length === 2) {
+                isZooming = true;
+                initialDistance = getDistance(e.touches[0], e.touches[1]);
+                return;
             }
-
-            /* If double tap, display the cursor */
+            
+            tapCount++;
+    
+            /*If double tap, display the cursor*/
             if (tapCount === 2) {
                 cursor.style.top = (e.touches[0].clientY - 100) + 'px';
                 cursor.style.left = (e.touches[0].clientX - 50) + 'px';
                 cursor.style.display = 'block';
-                isCursorActive = true;
             }
 
             if (cursor.style.display === 'block') {
                 snackbar.style.display = 'block'; 
-                snackbar.innerHTML = '<p>Slide to hover over the face.</p>';
+                snackbar.innerHTML = '<p>slide to hover over the face.</p>';
             }
         }, { passive: false });
 
-        /* Handle touchmove event */
+        /*Handle touchmove event*/
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
 
-            if (e.touches.length === 2) {
-                var currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-
-                var scale = currentDistance / initialDistance;
-                // Apply zoom logic, e.g., adjust the image scale
-                var image = document.querySelector('#grid-container img');
-                image.style.transform = 'scale(' + (initialScale * scale) + ')';
-                image.style.transformOrigin = `${initialImageCenter.x}px ${initialImageCenter.y}px`;
-            } else {
-                cursor.style.top = (e.touches[0].clientY - 100) + 'px';
-                cursor.style.left = (e.touches[0].clientX - 50) + 'px';
-
-                /* If start is defined and not secondTap, adjust rectangle size */
-                if (start && !secondTap) {
-                    rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
-                    rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
-                    snackbar.style.display = 'block';
-                    snackbar.innerHTML = '<p>Slide to hover over the face.</p>'; /* Update the snackbar text */
-                }
+            // 处理双指缩放
+            if(isZooming && e.touches.length === 2) {
+                const currentDistance = getDistance(e.touches[0], e.touches[1]);
+                const scale = currentDistance / initialDistance;
+                
+                // 计算新的缩放值,限制缩放范围在0.5到3之间
+                currentScale = Math.min(Math.max(lastScale * scale, 0.5), 3);
+                
+                // 应用变换
+                gridContainer.style.transform = `scale(${currentScale})`;
+                return;
             }
+
+            cursor.style.top = (e.touches[0].clientY - 100) + 'px';
+            cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+
+            /*If start is defined and not secondTap, adjust rectangle size*/
+            if (start && !secondTap) {
+                rectangle.style.width = (e.touches[0].clientX - start.x) + 'px';
+                rectangle.style.height = (e.touches[0].clientY - start.y) + 'px';
+                snackbar.style.display = 'block';
+                snackbar.innerHTML = '<p>slide to hover over the face.</p>'; /*Update the snackbar text*/
+            }
+
         }, { passive: false });
 
-        /* Handle touchend event */
+        /*Handle touchend event*/
         document.addEventListener('touchend', function (e) {
             e.preventDefault();
+
+            // 处理缩放结束
+            if(isZooming) {
+                isZooming = false;
+                lastScale = currentScale;
+                return;
+            }
 
             /* 获取cursor和sketches */
             const cursor = document.getElementById('cursor');
@@ -404,7 +419,7 @@
          if(!cursor || !sketches.length || cursor.style.display === 'none') return;
          
          const cursorRect = cursor.getBoundingClientRect();
-         /*计算cursor中心点坐标*/
+         // 计算cursor中心点坐标
          const cursorCenterX = cursorRect.left + cursorRect.width / 2;
          const cursorCenterY = cursorRect.top + cursorRect.height / 2;
          
@@ -452,12 +467,12 @@
              /*当cursor中心在sketch上方时改变sketch样式*/
              if(isInside) {
                  sketch.style.backgroundColor = 'rgba(202,234,248,0.3)';
-                 if(!isOnEdge) { /* 如果不在边缘,才改变边框颜色*/
+                 if(!isOnEdge) { // 如果不在边缘,才改变边框颜色
                      sketch.style.borderColor = '#000000';
                  }
              } else {
                  sketch.style.backgroundColor = 'rgba(147, 209, 237, 0.3)';
-                 if(!isOnEdge) { /* 如果不在边缘,才改变边框颜色*/
+                 if(!isOnEdge) { // 如果不在边缘,才改变边框颜色
                      sketch.style.borderColor = '#93d1ed';
                  }
              }
@@ -467,103 +482,7 @@
      /*定期检查重叠状态*/
      setInterval(checkOverlap, 100);
 
-     /* 双击手势*/
-     function handleDoubleTap(e) {
-         e.preventDefault();
-         let location = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-         cursor.style.top = (location.y - 100) + 'px';
-         cursor.style.left = (location.x - 50) + 'px';
-         cursor.style.display = 'block';
-         isCursorActive = true;
-     }
-
-     /* 触摸事件处理*/
-     function handleTouchMove(e) {
-         e.preventDefault();
-         let location = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-         cursor.style.top = (location.y - 100) + 'px';
-         cursor.style.left = (location.x - 50) + 'px';
-
-         if (start && !secondTap) {
-             rectangle.style.width = (location.x - start.x) + 'px';
-             rectangle.style.height = (location.y - start.y) + 'px';
-             snackbar.style.display = 'block';
-             snackbar.innerHTML = '<p>slide to hover over the face.</p>';
-         }
-     }
-
-     /* 重置状态*/
-     function handleTouchEnd(e) {
-         e.preventDefault();
-         let cursor = document.getElementById('cursor');
-         let sketches = document.querySelectorAll('.sketch');
-         
-         if (cursor && sketches.length) {
-             let cursorRect = cursor.getBoundingClientRect();
-             let cursorCenterX = cursorRect.left + cursorRect.width / 2;
-             let cursorCenterY = cursorRect.top + cursorRect.height / 2;
-             
-             sketches.forEach(sketch => {
-                 let sketchRect = sketch.getBoundingClientRect();
-                 
-                 let isInside = (
-                     cursorCenterX >= sketchRect.left &&
-                     cursorCenterX <= sketchRect.right &&
-                     cursorCenterY >= sketchRect.top &&
-                     cursorCenterY <= sketchRect.bottom
-                 );
-                 
-                 if (isInside) {
-                     sketch.style.backgroundColor = 'rgba(0, 155, 255, 0.5)';
-                     sketch.style.borderColor = '#268ff9';
-                 }
-                 
-                 if (Math.abs(cursorCenterX - sketchRect.left) < 2) {
-                     sketch.style.borderLeftColor = '#268FF9';
-                     sketch.style.borderLeftWidth = '2px';
-                 }
-                 if (Math.abs(cursorCenterX - sketchRect.right) < 2) {
-                     sketch.style.borderRightColor = '#268FF9';
-                     sketch.style.borderRightWidth = '2px';
-                 }
-                 if (Math.abs(cursorCenterY - sketchRect.top) < 2) {
-                     sketch.style.borderTopColor = '#268FF9';
-                     sketch.style.borderTopWidth = '2px';
-                 }
-                 if (Math.abs(cursorCenterY - sketchRect.bottom) < 2) {
-                     sketch.style.borderBottomColor = '#268FF9';
-                     sketch.style.borderBottomWidth = '2px';
-                 }
-             });
-         }
-
-         if (e.touches.length === 0) {
-             cursor.style.display = 'none';
-             snackbar.style.display = 'none';
-             snackbar.style.display = 'block';
-             snackbar.innerHTML = '<p><code>Doubletap + hold</code> to accesss precise cursor.</p>';
-         }
-
-         if (secondTap) {
-             rectangle.style.background = 'rgba(6, 150, 215, 0.2)';
-             rectangle = null;
-
-             if (!rectangle) {
-                 tapCount = 0;
-                 start = null;
-                 secondTap = false;
-             }
-         }
-
-         isCursorActive = false;
-     }
-
-     /* 添加事件监听器*/
-     document.addEventListener('touchstart', handleDoubleTap, { passive: false });
-     document.addEventListener('touchmove', handleTouchMove, { passive: false });
-     document.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-    </script>       
+     </script>       
 </body>
 
 </html>
