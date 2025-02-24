@@ -203,7 +203,7 @@
             color: #333333;
             padding-left: 20px;
         }
-        
+       
     </style>    
 </head>
 
@@ -223,7 +223,7 @@
         <div class="circle"></div>
         <div class="circle"></div>
     </div>
-    <div id="sketch-container" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+    <div id="sketch-container" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1;">
         <div class="sketch" style="position: absolute; left: -70px; top: -30px; width: 150px; height: 150px;"></div>
         <div class="sketch" style="position: absolute; left: 70px; top: 30px; width: 150px; height: 150px;"></div>
     </div>
@@ -258,6 +258,14 @@
         var currentScale = 1;
         var isZooming = false;
         var lastScale = 1;
+        
+        // 新增:记录cursor相对位置的变量
+        var lastCursorPosition = {
+            x: 0,
+            y: 0,
+            relativeX: 0,
+            relativeY: 0
+        };
 
         /*计算两个触摸点之间的距离*/
         function getDistance(touch1, touch2) {
@@ -275,6 +283,19 @@
             if(e.touches.length === 2) {
                 isZooming = true;
                 initialDistance = getDistance(e.touches[0], e.touches[1]);
+                // 缩放开始时隐藏cursor
+                if(cursor.style.display === 'block') {
+                    // 记录cursor当前位置
+                    const cursorRect = cursor.getBoundingClientRect();
+                    const containerRect = sketchContainer.getBoundingClientRect();
+                    lastCursorPosition = {
+                        x: cursorRect.left,
+                        y: cursorRect.top,
+                        relativeX: (cursorRect.left - containerRect.left) / currentScale,
+                        relativeY: (cursorRect.top - containerRect.top) / currentScale
+                    };
+                    cursor.style.display = 'none';
+                }
                 return;
             }
             
@@ -282,8 +303,17 @@
     
             /*If double tap, display the cursor*/
             if (tapCount === 2) {
-                cursor.style.top = (e.touches[0].clientY - 100) + 'px';
-                cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+                if(lastCursorPosition.x !== 0 && lastCursorPosition.y !== 0) {
+                    // 使用记录的相对位置计算新位置
+                    const containerRect = sketchContainer.getBoundingClientRect();
+                    const newX = containerRect.left + (lastCursorPosition.relativeX * currentScale);
+                    const newY = containerRect.top + (lastCursorPosition.relativeY * currentScale);
+                    cursor.style.top = newY + 'px';
+                    cursor.style.left = newX + 'px';
+                } else {
+                    cursor.style.top = (e.touches[0].clientY - 100) + 'px';
+                    cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+                }
                 cursor.style.display = 'block';
             }
 
