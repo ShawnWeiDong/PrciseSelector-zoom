@@ -259,12 +259,16 @@
         var isZooming = false;
         var lastScale = 1;
         
-        // 新增:记录cursor相对位置的变量
+        // 新增:记录cursor相对位置和初始触摸点的变量
         var lastCursorPosition = {
             x: 0,
             y: 0,
             relativeX: 0,
             relativeY: 0
+        };
+        var initialTouch = {
+            x: 0,
+            y: 0
         };
 
         /*计算两个触摸点之间的距离*/
@@ -315,6 +319,11 @@
                     cursor.style.left = (e.touches[0].clientX - 50) + 'px';
                 }
                 cursor.style.display = 'block';
+                // 记录初始触摸点位置
+                initialTouch = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
+                };
             }
 
             if (cursor.style.display === 'block') {
@@ -341,8 +350,20 @@
                 return;
             }
 
-            cursor.style.top = (e.touches[0].clientY - 100) + 'px';
-            cursor.style.left = (e.touches[0].clientX - 50) + 'px';
+            // 计算触摸点移动的距离
+            const deltaX = e.touches[0].clientX - initialTouch.x;
+            const deltaY = e.touches[0].clientY - initialTouch.y;
+
+            // 从记录的位置开始移动cursor
+            if(cursor.style.display === 'block') {
+                const cursorRect = cursor.getBoundingClientRect();
+                cursor.style.left = (cursorRect.left + deltaX) + 'px';
+                cursor.style.top = (cursorRect.top + deltaY) + 'px';
+                
+                // 更新初始触摸点位置
+                initialTouch.x = e.touches[0].clientX;
+                initialTouch.y = e.touches[0].clientY;
+            }
 
             /*If start is defined and not secondTap, adjust rectangle size*/
             if (start && !secondTap) {
