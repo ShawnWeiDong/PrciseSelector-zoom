@@ -398,6 +398,7 @@
                 
                 sketches.forEach(sketch => {
                     const sketchRect = sketch.getBoundingClientRect();
+                    const tolerance = 5; // 添加边缘容差值
                     
                     /* 检查cursor中心是否在sketch内部 */
                     const isInside = (
@@ -407,26 +408,34 @@
                         cursorCenterY <= sketchRect.bottom
                     );
                     
-                    /* 如果在内部，改变sketch的颜色和边框 */
-                    if(isInside) {
+                    /* 检查是否在边缘容差范围内 */
+                    const isNearEdge = (
+                        Math.abs(cursorCenterX - sketchRect.left) <= tolerance ||
+                        Math.abs(cursorCenterX - sketchRect.right) <= tolerance ||
+                        Math.abs(cursorCenterY - sketchRect.top) <= tolerance ||
+                        Math.abs(cursorCenterY - sketchRect.bottom) <= tolerance
+                    );
+                    
+                    /* 如果在内部且不在边缘容差范围内，改变sketch的颜色和边框 */
+                    if(isInside && !isNearEdge) {
                         sketch.style.backgroundColor = 'rgba(0, 155, 255, 0.5)';  /* background select state*/
                         sketch.style.borderColor = '#268ff9';  /* border select state*/
                     }
                     
-                    /* 检查cursor中心是否与边缘重叠 */
-                    if(Math.abs(cursorCenterX - sketchRect.left) < 2) {
+                    /* 检查cursor中心是否与边缘重叠（使用容差） */
+                    if(Math.abs(cursorCenterX - sketchRect.left) <= tolerance) {
                         sketch.style.borderLeftColor = '#268FF9';  /* border select state*/
                         sketch.style.borderLeftWidth = '2px';
                     }
-                    if(Math.abs(cursorCenterX - sketchRect.right) < 2) {
+                    if(Math.abs(cursorCenterX - sketchRect.right) <= tolerance) {
                         sketch.style.borderRightColor = '#268FF9';
                         sketch.style.borderRightWidth = '2px';
                     }
-                    if(Math.abs(cursorCenterY - sketchRect.top) < 2) {
+                    if(Math.abs(cursorCenterY - sketchRect.top) <= tolerance) {
                         sketch.style.borderTopColor = '#268FF9';
                         sketch.style.borderTopWidth = '2px';
                     }
-                    if(Math.abs(cursorCenterY - sketchRect.bottom) < 2) {
+                    if(Math.abs(cursorCenterY - sketchRect.bottom) <= tolerance) {
                         sketch.style.borderBottomColor = '#268FF9';
                         sketch.style.borderBottomWidth = '2px';
                     }
@@ -480,13 +489,14 @@
          
          sketches.forEach(sketch => {
              const sketchRect = sketch.getBoundingClientRect();
+             const tolerance = 5; // 添加边缘容差值
              
              /*检查cursor中心是否与边缘重叠*/
              const isOnEdge = (
-                 Math.abs(cursorCenterX - sketchRect.left) < 2 ||
-                 Math.abs(cursorCenterX - sketchRect.right) < 2 ||
-                 Math.abs(cursorCenterY - sketchRect.top) < 2 ||
-                 Math.abs(cursorCenterY - sketchRect.bottom) < 2
+                 Math.abs(cursorCenterX - sketchRect.left) <= tolerance ||
+                 Math.abs(cursorCenterX - sketchRect.right) <= tolerance ||
+                 Math.abs(cursorCenterY - sketchRect.top) <= tolerance ||
+                 Math.abs(cursorCenterY - sketchRect.bottom) <= tolerance
              );
              
              /*检查cursor中心是否在sketch内部*/
@@ -498,38 +508,34 @@
              );
              
              /*边缘重叠时改变边框颜色*/
-             if(Math.abs(cursorCenterX - sketchRect.left) < 2) {
+             if(Math.abs(cursorCenterX - sketchRect.left) <= tolerance) {
                  sketch.style.borderLeftColor = '#6BABF5';
              } else {
                  sketch.style.borderLeftColor = '#93d1ed';
              }
-             if(Math.abs(cursorCenterX - sketchRect.right) < 2) {
+             if(Math.abs(cursorCenterX - sketchRect.right) <= tolerance) {
                  sketch.style.borderRightColor = '#6BABF5';
              } else {
                  sketch.style.borderRightColor = '#93d1ed';
              }
-             if(Math.abs(cursorCenterY - sketchRect.top) < 2) {
+             if(Math.abs(cursorCenterY - sketchRect.top) <= tolerance) {
                  sketch.style.borderTopColor = '#6BABF5';
              } else {
                  sketch.style.borderTopColor = '#93d1ed';
              }
-             if(Math.abs(cursorCenterY - sketchRect.bottom) < 2) {
+             if(Math.abs(cursorCenterY - sketchRect.bottom) <= tolerance) {
                  sketch.style.borderBottomColor = '#6BABF5';
              } else {
                  sketch.style.borderBottomColor = '#93d1ed';
              }
              
-             /*当cursor中心在sketch上方时改变sketch样式*/
-             if(isInside) {
+             /*当cursor中心在sketch上方且不在边缘容差范围内时改变sketch样式*/
+             if(isInside && !isOnEdge) {
                  sketch.style.backgroundColor = 'rgba(202,234,248,0.3)';
-                 if(!isOnEdge) { // 如果不在边缘,才改变边框颜色
-                     sketch.style.borderColor = '#000000';
-                 }
-             } else {
+                 sketch.style.borderColor = '#000000';
+             } else if(!isOnEdge) {
                  sketch.style.backgroundColor = 'rgba(147, 209, 237, 0.3)';
-                 if(!isOnEdge) { // 如果不在边缘,才改变边框颜色
-                     sketch.style.borderColor = '#93d1ed';
-                 }
+                 sketch.style.borderColor = '#93d1ed';
              }
          });
      }
